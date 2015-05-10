@@ -1,31 +1,40 @@
 {
     "dimensions": [
         {
-         "name":"item",
+         "name":"channel",
          "levels": [
                 {
-                    "name":"category",
-                    "label":"Category",
-                    "attributes": ["category", "category_label"]
-                },
-                {
-                    "name":"subcategory",
-                    "label":"Sub-category",
-                    "attributes": ["subcategory", "subcategory_label"]
-                },
-                {
-                    "name":"line_item",
-                    "label":"Line Item",
-                    "attributes": ["line_item"]
+                    "name":"channel",
+                    "label":"channel",
+                    "attributes": ["channel"]
                 }
             ]
         },
-        {"name":"year", "role": "time"}
+        {
+         "name":"region",
+         "levels": [
+                {
+                    "name":"region",
+                    "label":"region",
+                    "attributes": ["region"]
+                }
+            ]
+        },
+        {
+         "name":"version",
+         "levels": [
+                {
+                    "name":"version",
+                    "label":"version",
+                    "attributes": ["version"]
+                }
+            ]
+        }
     ],
     "cubes": [
         {
-            "name": "irbd_balance",
-            "dimensions": ["item", "year"],
+            "name": "test_data",
+            "dimensions": ["channel", "region", "version"],
             "measures": [
                 {"name":"amount", "label":"Amount"}
             ],
@@ -41,11 +50,9 @@
                     }
                 ],
             "mappings": {
-                          "item.line_item": "line_item",
-                          "item.subcategory": "subcategory",
-                          "item.subcategory_label": "subcategory_label",
-                          "item.category": "category",
-                          "item.category_label": "category_label"
+                          "item.channel": "channel",
+                          "item.region": "region",
+                          "item.version": "version"
                          },
             "info": {
                 "min_date": "2010-01-01",

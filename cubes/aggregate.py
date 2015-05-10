@@ -1,3 +1,5 @@
+#!/bin/env python
+# encoding: utf-8
 from __future__ import print_function
 from cubes import Workspace, Cell, PointCut
 
@@ -9,7 +11,7 @@ workspace.register_default_store("sql", url="sqlite:///data.sqlite")
 workspace.import_model("model.json")
 
 # 2. Get a browser
-browser = workspace.browser("irbd_balance")
+browser = workspace.browser("test_data")
 
 # 3. Play with aggregates
 result = browser.aggregate()
@@ -25,31 +27,34 @@ print("Total amount : %8d" % result.summary["amount_sum"])
 #
 
 print("\n"
-      "Drill Down by Category (top-level Item hierarchy)\n"
+      "Drill Down by Region (top-level Item hierarchy)\n"
       "==================================================")
 #
-result = browser.aggregate(drilldown=["item"])
+result = browser.aggregate(drilldown=["region"])
 #
-print(("%-20s%10s%10s\n"+"-"*50) % ("Category", "Count", "Total"))
+print(("%-20s%10s%10s\n"+"-"*50) % ("Region", "Count", "Total"))
 #
-for row in result.table_rows("item"):
+for row in result.table_rows("region"):
     print("%-20s%10d%10d" % (row.label,
-                              row.record["record_count"],
-                              row.record["amount_sum"])
-                              )
+                             row.record["record_count"],
+                             row.record["amount_sum"]
+                             ))
 
 print("\n"
-      "Slice where Category = Equity\n"
+      "Slice where region = BR\n"
       "==================================================")
 
-cut = PointCut("item", ["e"])
-cell = Cell(browser.cube, cuts = [cut])
+cuts = [
+    PointCut("region", ["BR"]),
+]
+cell = Cell(browser.cube, cuts=cuts)
 
-result = browser.aggregate(cell, drilldown=["item"])
+result = browser.aggregate(cell, drilldown=["channel", "version", "region"])
 
-print(("%-20s%10s%10s%10s\n"+"-"*50) % ("Sub-category", "Count", "Total", "Double"))
+print(("%-20s%-20s%10s%10s\n"+"-"*50) % ("version", "channel", "Count", "Total"))
 
-for row in result.table_rows("item"):
-    print("%-20s%10d%10d" % ( row.label,
-                              row.record["record_count"],
-                              row.record["amount_sum"]))
+for row in result.table_rows("version"):
+    print("%-20s%-20s%10d%10d" % (row.record['version'],
+                                  row.record['channel'],
+                                  row.record["record_count"],
+                                  row.record["amount_sum"]))

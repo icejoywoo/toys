@@ -7,7 +7,7 @@ from cubes.tutorial.sql import create_table_from_csv
 
 # 1. Prepare SQL data in memory
 
-FACT_TABLE = "irbd_balance"
+FACT_TABLE = "test_data"
 
 print("preparing data...")
 
@@ -17,13 +17,11 @@ create_table_from_csv(engine,
                       "data.csv",
                       table_name=FACT_TABLE,
                       fields=[
-                            ("category", "string"),
-                            ("category_label", "string"),
-                            ("subcategory", "string"),
-                            ("subcategory_label", "string"),
-                            ("line_item", "string"),
-                            ("year", "integer"),
-                            ("amount", "integer")],
+                            ("channel", "string"),
+                            ("region", "string"),
+                            ("version", "string"),
+                            ("amount", "integer"),
+                      ],
                       create_id=True
                   )
 
