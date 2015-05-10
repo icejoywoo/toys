@@ -1,0 +1,64 @@
+{
+  "dimensions": [
+    {
+      "name": "channel",
+      "levels": [
+        {
+          "name": "channel",
+          "label": "channel",
+          "attributes": ["channel"]
+        }
+      ]
+    },
+    {
+      "name": "region",
+      "levels": [
+        {
+          "name": "region",
+          "label": "region",
+          "attributes": ["region"]
+        }
+      ]
+    },
+    {
+      "name": "version",
+      "levels": [
+        {
+          "name": "version",
+          "label": "version",
+          "attributes": ["version"]
+        }
+      ]
+    }
+  ],
+  "cubes": [
+    {
+      "name": "query",
+      "dimensions": ["channel", "version", "region"],
+      "measures": [
+        {
+          "name": "count",
+          "label": "count"
+        }
+      ],
+      "aggregates": [
+        {
+          "name": "amount_sum"
+        },
+        {
+          "name": "record_count"
+        }
+      ],
+      "mappings": {
+        "amount_sum": {
+          "field": "count",
+          "group": {"$sum": "$count"}
+        },
+        "record_count": {
+          "field": "userid",
+          "group": {"$sum": 1}
+        }
+      }
+    }
+  ]
+}
