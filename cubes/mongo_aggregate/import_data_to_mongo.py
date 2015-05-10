@@ -12,6 +12,7 @@ buffer = []
 
 for line in open("data.csv"):
     item = dict(zip(field_names, line.rstrip('\n').split(',')))
+    item['count'] = int(item['count'])
     buffer.append(item)
     if len(buffer) >= 10000:
         query_result.insert(buffer)
