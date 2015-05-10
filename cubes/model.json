@@ -39,24 +39,20 @@
                 {"name":"amount", "label":"Amount"}
             ],
             "aggregates": [
-                    {
-                        "name": "amount_sum",
-                        "function": "sum",
-                        "measure": "amount"
-                    },
-                    {
-                        "name": "record_count",
-                        "function": "count"
-                    }
-                ],
+                {
+                    "name": "amount_sum",
+                    "function": "sum",
+                    "measure": "amount"
+                },
+                {
+                    "name": "record_count",
+                    "function": "count"
+                }
+            ],
             "mappings": {
-                          "item.channel": "channel",
-                          "item.region": "region",
-                          "item.version": "version"
-                         },
-            "info": {
-                "min_date": "2010-01-01",
-                "max_date": "2010-12-31"
+                "item.channel": "channel",
+                "item.region": "region",
+                "item.version": "version"
             }
         }
     ]
