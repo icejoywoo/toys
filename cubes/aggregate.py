@@ -46,6 +46,7 @@ print("\n"
 
 cuts = [
     PointCut("region", ["BR"]),
+    PointCut("channel", ["web|br|official|direct"]),
 ]
 cell = Cell(browser.cube, cuts=cuts)
 
