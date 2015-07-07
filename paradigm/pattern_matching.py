@@ -5,7 +5,7 @@
 __author__ = 'wujiabin'
 
 
-from patterns import patterns, Mismatch
+from patterns import patterns
 
 @patterns
 def factorial():
