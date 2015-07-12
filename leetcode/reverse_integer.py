@@ -8,18 +8,18 @@ class Solution:
     # @param {integer} x
     # @return {integer}
     def reverse(self, x):
-        s = str(x)
-        # 是否带有负号
-        if s[0] == '-':
-            result = int('-%s' % s[1:][::-1])
-        else:
-            result = int(s[::-1])
+        y = x
+        result = 0
+        while y:
+            result = result * 10 + y % 10
+            y /= 10
 
-        if result > 2**31 - 1 or result < -2**31:
+        # integer overflow [-2*31, 2*31-1]
+        if result > 2147483647 or result < -2147483648:
             return 0
         else:
             return result
 
 
 if __name__ == '__main__':
-    print Solution().reverse(-123) == -321
+    assert Solution().reverse(-123) == -321
