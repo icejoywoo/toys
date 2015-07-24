@@ -15,3 +15,9 @@ class Solution:
             if gap in nums_dict and nums_dict[gap] != i:
                 return i + 1, nums_dict[gap] + 1
         return None
+
+
+if __name__ == '__main__':
+    s = Solution()
+    print s.twoSum([4, 4], 8)
+    print s.twoSum([4, 4, 4], 8)
