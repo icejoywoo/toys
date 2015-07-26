@@ -8,7 +8,12 @@ class Solution:
     # @param {integer} x
     # @return {integer}
     def reverse(self, x):
-        y = x
+        if x < 0:
+            y = -x
+            flag = True
+        else:
+            y = x
+            flag = False
         result = 0
         while y:
             result = result * 10 + y % 10
@@ -18,7 +23,10 @@ class Solution:
         if result > 2147483647 or result < -2147483648:
             return 0
         else:
-            return result
+            if flag:
+                return -result
+            else:
+                return result
 
 
 if __name__ == '__main__':
