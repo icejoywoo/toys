@@ -16,11 +16,11 @@ from structlog.stdlib import filter_by_level
 # simple usage
 logger = getLogger('hello.logger')
 
-logger = logger.bind(user='anonymous', some_key=23)
-logger.info('user.logged_in', happy=True)
+log = logger.bind(user='anonymous', some_key=23)
+log.info('user.logged_in', happy=True)
 
-logger = logger.bind(user='hynek', some_key=42)
-logger.info('user.logged_in', happy=True, num_list=[1, 2, 3])
+log = logger.bind(user='hynek', some_key=42)
+log.info('user.logged_in', happy=True, num_list=[1, 2, 3])
 
 
 # json log
@@ -49,8 +49,11 @@ logger = wrap_logger(
     ]
 )
 
-logger = logger.bind(user='anonymous', some_key=23)
-logger.info('user.logged_in', happy=True)
+log = logger.bind(user='anonymous', some_key=23)
+log.info('user.logged_in', happy=True)
 
-logger = logger.bind(user='hynek', some_key=42)
-logger.info('user.logged_in', happy=True, num_list=[1, 2, 3])
+log = logger.bind(user='hynek', some_key=42)
+log.info('user.logged_in', happy=True, num_list=[1, 2, 3])
+
+logger._log_file = 'xx'
+print logger._log_file
