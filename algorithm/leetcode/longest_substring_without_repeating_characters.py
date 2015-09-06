@@ -13,7 +13,7 @@ class Solution(object):
         """
         i = 0
         length = len(s)
-        result = None
+        max_length = 0
         appered_before = set()
 
         start = 0
@@ -23,23 +23,15 @@ class Solution(object):
                 appered_before.add(s[i])
                 i += 1
             else:
-                new_result = s[start:i]
-                if result and len(result) < len(new_result):
-                    result = new_result
-                elif result is None:
-                    result = new_result
+                max_length = max(i - start, max_length)
                 new_start = s.find(s[i], start) + 1
                 for j in xrange(start, new_start):
                     appered_before.remove(s[j])
                 start = new_start
 
-        new_result = s[start:i]
-        if result and len(result) < len(new_result):
-            result = new_result
-        elif result is None:
-            result = new_result
+        max_length = max(i - start, max_length)
 
-        return len(result) if result else 0
+        return max_length
 
 
 if __name__ == '__main__':
