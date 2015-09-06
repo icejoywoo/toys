@@ -11,27 +11,22 @@ class Solution(object):
         :type s: str
         :rtype: int
         """
-        i = 0
-        length = len(s)
-        max_length = 0
-        appered_before = set()
-
         start = 0
+        index = 0
+        length = len(s)
+        exist = set()
+        max_len = 0
 
-        while i < length:
-            if s[i] not in appered_before:
-                appered_before.add(s[i])
-                i += 1
-            else:
-                max_length = max(i - start, max_length)
-                new_start = s.find(s[i], start) + 1
-                for j in xrange(start, new_start):
-                    appered_before.remove(s[j])
-                start = new_start
+        while index < length:
+            while s[index] in exist:
+                exist.remove(s[start])
+                start += 1
 
-        max_length = max(i - start, max_length)
+            exist.add(s[index])
+            max_len = max(max_len, index - start + 1)
+            index += 1
 
-        return max_length
+        return max_len
 
 
 if __name__ == '__main__':
