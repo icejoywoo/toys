@@ -24,7 +24,10 @@ class Stack(object):
 
     def pop(self):
         last, _ = self._stack.pop()
-        self._min = self._stack[-1][1]
+        if self._stack:
+            self._min = self._stack[-1][1]
+        else:
+            self._min = None
         return last
 
     def min(self):
@@ -52,3 +55,8 @@ if __name__ == '__main__':
 
     s.pop()
     assert s.min() == 3
+
+    s.pop()
+    s.pop()
+    s.pop()
+    assert s.min() is None
