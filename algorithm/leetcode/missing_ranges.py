@@ -34,3 +34,6 @@ if __name__ == '__main__':
     assert s.missing_ranges([56]) == ['0->55', '57->99']
     assert s.missing_ranges([]) == ['0->99']
     assert s.missing_ranges([0, 1, 3, 50, 75]) == ['2', '4->49', '51->74', '76->99']
+
+    assert s.missing_ranges(range(1000), 0, 999) == []
+    assert s.missing_ranges([555], 0, 999) == ['0->554', '556->999']
