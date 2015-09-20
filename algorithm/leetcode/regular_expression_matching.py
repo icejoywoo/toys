@@ -12,29 +12,38 @@ class Solution:
         s_len = len(s)
         p_len = len(p)
         i = j = 0
-        last_char_in_p = p[0]
-        while i < s_len and j < p_len:
-            print i, j
-            if p[j] == '.':
-                last_char_in_p = p[j]
-                i += 1
-                j += 1
-            elif p[j] == '*':
-                if last_char_in_p == '.':
-                    # .* 贪婪匹配
-                    i += 1
-                elif s[i] == last_char_in_p:
-                    i += 1
-                elif s[i] != last_char_in_p:
-                    j += 1
-            elif s[i] == p[j]:
-                i += 1
-                j += 1
-            elif s[i] != p[j]:
+
+        # pattern字符串已经消耗完毕
+        if p_len == 0:
+            return s_len == 0
+
+        # 仅剩一个字符的情况
+        if p_len == 1:
+            if s_len == 1:
+                return s[i] == p[j] or p[j] == '.'
+            else:
                 return False
-        return True
+
+        if p[i+1] == '*':
+            while i < s_len and j < p_len and (s[i] == p[j] or p[j] == '.'):
+                if self.isMatch(s[i:], p[j+2:]):
+                    return True
+                i += 1
+            return self.isMatch(s[i:], p[j+2:])
+        else:
+            if i < s_len and j < p_len:
+                return (s[i] == p[j] or p[i] == '.') and self.isMatch(s[i+1:], p[j+1:])
+            else:
+                return False
 
 
 if __name__ == '__main__':
     assert Solution().isMatch('aa', 'a.')
-    assert Solution().isMatch('aa', 'a')
+    assert Solution().isMatch('aa', 'a') == False
+    assert Solution().isMatch("aa", "a*")
+    assert Solution().isMatch("aa", ".*")
+    assert Solution().isMatch("ab", ".*")
+    assert Solution().isMatch("aab", "c*a*b")
+    assert Solution().isMatch("ab", ".*c") == False
+    assert Solution().isMatch("a", ".*..a*") == False
+    assert Solution().isMatch("aaaaaaaaaaaaab", "a*a*a*a*a*a*a*a*a*a*c") == False
