@@ -14,6 +14,8 @@ def create_data_set():
 
 
 def classify0(inX, dateSet, labels, k):
+    """ KNN 计算最近的节点，根据临近的标注结果选择一个结果作为输入数据的输出，是一个分类算法
+    """
     dataSetSize = dateSet.shape[0]
     # 计算距离
     diffMat = numpy.tile(inX, (dataSetSize, 1)) - dateSet
