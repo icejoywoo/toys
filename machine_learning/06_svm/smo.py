@@ -375,7 +375,82 @@ def testRbf(k1=1.3):
         if np.sign(predict) != np.sign(labelAttr[i]):
             errorCount += 1
 
+    print 'the test error rate is %f' % (1.0 * errorCount / m)
+
+
+# 手写数据识别
+def img2vector(filename):
+    """ 读取文件中的 0 和 1，转换为一个数组向量
+    """
+    returnMat = np.zeros((1, 1024))
+    with open(filename) as fr:
+        index = 0
+        for line in fr:
+            for i in range(32):
+                returnMat[0, index*32+i] = int(line[i])
+            index += 1
+    return returnMat
+
+
+def loadImages(dirName):
+    """ 加载数据，图片数据为文本，0和1来表示手写数字
+    """
+    import os
+    hwLabels = []
+    trainingFileList = os.listdir(dirName)
+    m = len(trainingFileList)
+
+    trainingMat = np.zeros((m, 1024))
+
+    for i in range(m):
+        fileNameStr = trainingFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        if classNumStr == 9:
+            hwLabels.append(-1)
+        else:
+            hwLabels.append(1)
+        trainingMat[i] = img2vector('%s/%s' % (dirName, fileNameStr))
+    return trainingMat, hwLabels
+
+
+def testDigits(kTup=('rbf', 10)):
+
+    dataAttr, labelAttr = loadImages('trainingDigits')
+    smo = PlattSMOImpl(dataAttr, labelAttr, 200, 0.0001, 10000, kTup)
+    b, alphas = smo.smoP()
+
+    dataMat = np.mat(dataAttr)
+    labelMat = np.mat(labelAttr).transpose()
+
+    # 支持向量
+    svInd = np.nonzero(alphas.A > 0)[0]
+    svs = dataMat[svInd]
+    svLabel = labelMat[svInd]
+    print 'there are %d Support Vecotors' % np.shape(svs)[0]
+
+    m, n = np.shape(dataMat)
+
+    errorCount = 0
+    for i in range(m):
+        kernelEval = smo.kernelTrans(svs, dataMat[i, :])
+        predict = kernelEval.T * np.multiply(svLabel, alphas[svInd]) + b
+        if np.sign(predict) != np.sign(labelAttr[i]):
+            errorCount += 1
     print 'the training error rate is %f' % (1.0 * errorCount / m)
+
+    dataAttr, labelAttr = loadImages('testDigits')
+    dataMat = np.mat(dataAttr)
+    labelMat = np.mat(labelAttr).transpose()
+    m, n = np.shape(dataMat)
+
+    errorCount = 0
+    for i in range(m):
+        kernelEval = smo.kernelTrans(svs, dataMat[i, :])
+        predict = kernelEval.T * np.multiply(svLabel, alphas[svInd]) + b
+        if np.sign(predict) != np.sign(labelAttr[i]):
+            errorCount += 1
+    print 'the test error rate is %f' % (1.0 * errorCount / m)
 
 
 if __name__ == '__main__':
@@ -405,8 +480,8 @@ if __name__ == '__main__':
 
     with Timer():
         dataAttr, labelAttr = loadDataSet('testSet.txt')
-        smo = PlattSMOImpl(dataAttr, labelAttr, 0.6, 0.001)
-        b, alphas = smo.smoP(40)
+        smo = PlattSMOImpl(dataAttr, labelAttr, 0.6, 0.001, 40)
+        b, alphas = smo.smoP()
         print b, alphas[alphas > 0]
         print np.array(dataAttr)[np.nonzero(alphas)[0]], np.array(labelAttr)[np.nonzero(alphas)[0]]
 
@@ -418,5 +493,8 @@ if __name__ == '__main__':
         print yi
         print classifySMO(dataMat[2], np.mat(ws), b), labelAttr[2]
 
+    with Timer():
+        testRbf()
 
-    testRbf()
+    with Timer():
+        testDigits()
