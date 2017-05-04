@@ -135,7 +135,7 @@ def get_number(pattern, content):
     if m:
         return int(m.group(1))
     else:
-        return None
+        return 1
 
 
 @retry(stop_max_attempt_number=5, wait_random_min=1000, wait_random_max=2000)
@@ -173,10 +173,13 @@ def load_page(page_number, start_date='', end_date=''):
     d = pq(r.content)
 
     # 页面显示的页数，翻页可能预期页数与实际页数不一致
+    # 有时候这个页面会不存在，需要修正为 1，就是总共只有一页，当前为第一页
     current_page = get_number(ur'当前第(\d+)页'.encode(r.encoding), r.content)
     total_page = get_number(ur'总共(\d+)页'.encode(r.encoding), r.content)
 
-    assert current_page == page_number + 1
+    if current_page != page_number + 1:
+        logger.warn('Page not correct. current_page: %(current_page)r page_number: %(page_number)r, '
+                    'start date: %(start_date)r, end date: %(end_date)r' % locals())
 
     keys = ('fang_id', 'district', 'location', 'price', 'layout', 'square_meter', 'state', 'agency', 'publish_date')
 
