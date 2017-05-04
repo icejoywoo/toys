@@ -7,13 +7,15 @@
     @date: 03/05/2017
 """
 
+import argparse
+import datetime
 import logging
 import multiprocessing
 from multiprocessing.dummy import Pool
 import os
 import random
+import re
 import sys
-import time
 import urlparse
 
 import pymongo
@@ -27,7 +29,7 @@ FORMAT = '[%(levelname)1.1s %(asctime)s.%(msecs)03d %(process)d %(filename)s:%(l
 logging.basicConfig(format=FORMAT)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 START_URL = 'http://www.laho.gov.cn/g4cdata/search/laho/clfSearch.jsp'
 
@@ -125,21 +127,28 @@ def get_random():
         imagevalue, clfrandinput = r.content.split('=')
         return imagevalue, clfrandinput
     else:
-        raise FailedToGetRandomException('failed to get random.')
+        logger.error('failed to get random. [status=%r]' % r.status_code)
+
+
+def get_number(pattern, content):
+    m = re.search(pattern, content)
+    if m:
+        return int(m.group(1))
+    else:
+        return None
 
 
 @retry(stop_max_attempt_number=5, wait_random_min=1000, wait_random_max=2000)
-def load_page(page_number):
-    time.sleep(random.uniform(0.05, 1))
+def load_page(page_number, start_date='', end_date=''):
     logger.debug('crawling page: %d' % page_number)
     imagevalue, clfrandinput = get_random()
     post_data = {
-        'chnlname': '%B4%E6%C1%BF%B7%BF%B7%BF%D4%B4',
+        'chnlname': '%B4%E6%C1%BF%B7%BF%B7%BF%D4%B4',  # GBK 编码
         'clfrandinput': clfrandinput,
         'currPage': page_number,
-        'fbrqEnd': '',
-        'fbrqStart': '',
-        'fbzl': '',
+        'fbrqStart': start_date,  # 发布起始日期 eg. 2017-05-01
+        'fbrqEnd': end_date,  # 发布结束日期 eg. 2017-05-02
+        'fbzl': '',  # 发布坐落
         'fwyt': '-1',
         'hxcf': '-1',
         'hxs': '-1',
@@ -149,42 +158,87 @@ def load_page(page_number):
         'imgvalue': imagevalue,
         'jgfwStart': '-1',
         'judge': '1',
-        'jyzt': '-1',
-        'jzmjStart': '-1',
+        'jyzt': '-1',  # 交易状态: -1 全部,0 放盘,1 已签约,2 已递件,3 已结案
+        'jzmjStart': '-1',  # 建筑面积: -1 全部,1 30平方米以下,2 30～50平方米,3 50～70平方米,4 70～90平方米,5 90～120平方米,6 120～144平方米,7 144平方米以上
         'orderfield': '',
         'ordertype': '',
-        'pybh': '',
-        'xqmc': '',
-        'xzqh': '-1',
-        'zjfwjgmc': '',
+        'pybh': '',  # 盘源编号 text input
+        'xqmc': '',  # 小区名称 text input
+        'xzqh': '-1',  # 行政区域: -1 全部,03 荔湾区,04 越秀区,05 海珠区,06 天河区,11 白云区,12 黄埔区,13 番禺区,14 花都区,16 罗岗区,17 南沙区
+        'zjfwjgmc': '',  # 中介机构, text input
     }
 
     r = requests.post(START_URL, data=post_data, headers=get_headers())
+    logger.debug('url: %r, status: %r, charset: %r' % (r.url, r.status_code, r.encoding))
     d = pq(r.content)
+
+    # 页面显示的页数，翻页可能预期页数与实际页数不一致
+    current_page = get_number(ur'当前第(\d+)页'.encode(r.encoding), r.content)
+    total_page = get_number(ur'总共(\d+)页'.encode(r.encoding), r.content)
+
+    assert current_page == page_number + 1
 
     keys = ('fang_id', 'district', 'location', 'price', 'layout', 'square_meter', 'state', 'agency', 'publish_date')
 
+    counter = 0
     for element in d('#tab tr').items():
+        # skip first column 'index'
         values = [i.text() for i in element('td').items()][1:]
         if values:
             data = dict(zip(keys, values))
             data['_id'] = data['fang_id']
             data['details_url'] = urlparse.urljoin(START_URL, element('td:eq(1) a').attr('href'))
             ret = coll.save(data)
-            logger.debug('insert data: %r, ret: %r' % (data, ret))
+            logger.debug('ret: %r, insert data: %r, ' % (ret, data))
+            counter += 1
         else:
-            logger.error('cannot parse line: %r' % element.html())
+            logger.debug('cannot parse line: %r' % element.html())
+    logger.info('start date: %(start_date)r, end date: %(end_date)r, '
+                'page: %(current_page)r, data count: %(counter)r' % locals())
+    return current_page, total_page
 
 if __name__ == '__main__':
 
+    date_format = '%Y-%m-%d'
+
+    def valid_date(s):
+        try:
+            return datetime.datetime.strptime(s, date_format)
+        except ValueError:
+            raise argparse.ArgumentTypeError('Not a valid date: {0}.'.format(s))
+
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', "--start_date",
+                        help="The Start Date - format YYYY-MM-DD ",
+                        required=True,
+                        type=valid_date)
+    parser.add_argument('-e', "--end_date",
+                        help="The End Date - format YYYY-MM-DD ",
+                        required=False,
+                        type=valid_date)
+    args = parser.parse_args()
+    logger.info('args: %r' % args)
+
+    start_date = args.start_date
+    end_date = args.end_date if args.end_date else args.start_date
+    interval = (end_date - start_date).days
+
     def start_process():
-        logger.info('starting process: %s' % multiprocessing.current_process().name)
+        logger.debug('starting process: %s' % multiprocessing.current_process().name)
 
     pool = Pool(processes=multiprocessing.cpu_count(), initializer=start_process)
+
     try:
-        for i in xrange(0, 21110):
-            pool.apply_async(load_page, (i,))
-        time.sleep(3600 * 24 * 30)
+        for i in range(interval+1):
+            page_start_date = (start_date + datetime.timedelta(days=i)).strftime(date_format)
+            page_end_date = (start_date + datetime.timedelta(days=i+1)).strftime(date_format)
+            current_page, total_page = load_page(0, page_start_date, page_end_date)
+            logger.info('start date: %(page_start_date)r, end date: %(page_end_date)r, '
+                        'page: %(current_page)r, total: %(total_page)r' % locals())
+            for j in xrange(1, total_page):
+                pool.apply_async(load_page, (j, page_start_date, page_end_date))
+
         pool.close()
         pool.join()
     except KeyboardInterrupt:
