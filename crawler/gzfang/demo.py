@@ -220,7 +220,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     logger.info('args: %r' % args)
 
-    start_date = args.start_date
+    today = datetime.datetime.combine(datetime.datetime.today(), datetime.time())
+
+    start_date = args.start_date if args.start_date else today
     end_date = args.end_date if args.end_date else args.start_date
     interval = (end_date - start_date).days
 
