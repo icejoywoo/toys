@@ -18,7 +18,7 @@ Tornado 的日志模块，稍作修改，作为简单通用的日志模块, 适�
 日志分为两个文件: .log.wf是warning以上级别的日志, .log是包含配置的所有级别的日志
 
 @author: tornado
-@author: wujiabin@baidu.com
+@author: icejoywoo
 """
 from __future__ import absolute_import, division, print_function, with_statement
 import logging
