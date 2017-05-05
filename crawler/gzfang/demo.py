@@ -174,6 +174,20 @@ def get_number(pattern, content):
         return 1
 
 
+def handle(k, v):
+    """ convert """
+    if k in ('price', 'square_meter'):
+        if v:
+            try:
+                return float(v)
+            except:
+                return None
+        else:
+            return None
+    else:
+        return v
+
+
 @retry(stop_max_attempt_number=5, wait_random_min=1000, wait_random_max=2000)
 def load_page(page_number, start_date='', end_date=''):
     logger.debug('crawling page: %d' % page_number)
@@ -222,6 +236,7 @@ def load_page(page_number, start_date='', end_date=''):
     session = Session()
     try:
         counter = 0
+        err_counter = 0
         for element in d('#tab tr').items():
             # skip first column 'index'
             values = [i.text() for i in element('td').items()][1:]
@@ -230,26 +245,30 @@ def load_page(page_number, start_date='', end_date=''):
                 data['_id'] = data['fang_id']
                 data['details_url'] = urlparse.urljoin(START_URL, element('td:eq(1) a').attr('href'))
                 try:
-                    f = Fang(**data)
+                    f = Fang(**{k: handle(k, v) for k, v in data.items()})
                     of = session.query(Fang).filter_by(fang_id=data['fang_id']).first()
                     if of:
                         nf = session.merge(f)
                     else:
                         session.add(f)
+                    # commit every time to get error at first place
+                    session.commit()
+                    logger.debug('Save data: %r' % f)
                 except sqlalchemy.exc.SQLAlchemyError:
                     logger.warn('Failed to save data. [exception=%r]' % traceback.format_exc())
-                session.commit()
-                logger.debug('save data: %r' % f)
-                counter += 1
+                    err_counter += 1
+                finally:
+                    counter += 1
             else:
                 logger.debug('cannot parse line: %r' % element.html())
-        session.commit()
         logger.info('start date: %(start_date)r, end date: %(end_date)r, '
-                    'page: %(current_page)r, data count: %(counter)r' % locals())
+                    'page: %(current_page)r, data counter: %(counter)r, '
+                    'data err counter: %(err_counter)r' % locals())
     except:
         session.rollback()
+        exc = traceback.format_exc()
         logger.warn('rollback. start date: %(start_date)r, end date: %(end_date)r, '
-                    'page: %(current_page)r' % locals())
+                    'page: %(current_page)r, exception: %(exc)s' % locals())
     finally:
         session.close()
     return current_page, total_page
