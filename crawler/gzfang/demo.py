@@ -24,17 +24,16 @@ import requests
 import sqlalchemy.exc
 from sqlalchemy import create_engine, Column, String, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import attributes, sessionmaker
 from retrying import retry
 from pyquery import PyQuery as pq
 
+import log
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-FORMAT = '[%(levelname)1.1s %(asctime)s.%(msecs)03d %(process)d %(filename)s:%(lineno)d] %(message)s'
-logging.basicConfig(format=FORMAT)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = logging.getLogger('demo')
+log.setup_logger(logger, workspace=BASE_DIR, level=logging.INFO)
 
 START_URL = 'http://www.laho.gov.cn/g4cdata/search/laho/clfSearch.jsp'
 
@@ -70,6 +69,21 @@ class Fang(Base):
                 unknown_columns.append((k, v))
         if unknown_columns:
             logger.debug('Unknown column: %s' % ','.join(['%r=%r' % (k, v) for k, v in unknown_columns]))
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in Fang.__table__.columns}
+
+    def diff(self):
+        """ http://stackoverflow.com/questions/3645802/how-to-get-the-original-value-of-changed-fields """
+        r = {}
+        for c in Fang.__table__.columns:
+            h = attributes.get_history(self, c.name)
+            if h.has_changes():
+                r[c.name] = (h.deleted, h.added)
+        return r
+
+    def diff_str(self):
+        return ','.join(['%s("%s" to "%s")' % (k, '|'.join(v[0]), '|'.join(v[1])) for k, v in self.diff().items()])
 
     def __repr__(self):
         return '<Fang(id=%r)>' % self.fang_id
@@ -249,7 +263,9 @@ def load_page(page_number, start_date='', end_date=''):
                     of = session.query(Fang).filter_by(fang_id=data['fang_id']).first()
                     if of:
                         nf = session.merge(f)
-                        counter['update'] += 1
+                        if session.is_modified(nf):
+                            counter['update'] += 1
+                            logger.info('Update data. [id=%r diff=%s]' % (nf.fang_id, nf.diff_str()))
                     else:
                         session.add(f)
                         counter['insert'] += 1
