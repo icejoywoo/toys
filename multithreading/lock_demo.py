@@ -3,7 +3,7 @@
 
 """
     @brief: 
-    @author: wujiabin@baidu.com
+    @author: icejoywoo
     @date: 9/20/16
 """
 

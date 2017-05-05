@@ -25,3 +25,9 @@ print np.nonzero(a[:,0])[0]
 print np.eye(5)
 
 print np.linalg.det(a)  # det == 0.0 说明矩阵不可逆
+
+print np.nonzero(a[a == 22])
+print np.nonzero(a)
+print np.nonzero(a > 22)
+
+print np.nonzero(a.reshape(1, 9))

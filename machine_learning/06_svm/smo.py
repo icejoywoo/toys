@@ -3,7 +3,7 @@
 
 """
     @brief: SVM 的一种实现，SMO（Sequential Minimal Optimization），二分类，类别标签使用-1和1，算法具有随机性
-    @author: wujiabin@baidu.com
+    @author: icejoywoo
     @date: 06/04/2017
 """
 

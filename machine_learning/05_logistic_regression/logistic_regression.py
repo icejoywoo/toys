@@ -3,7 +3,7 @@
 
 """
     @brief: 逻辑回归
-    @author: wujiabin@baidu.com
+    @author: icejoywoo
     @date: 26/03/2017
 """
 import numpy

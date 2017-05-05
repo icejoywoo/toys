@@ -3,7 +3,7 @@
 
 """
     @brief: adaboost(adaptive boosting)
-    @author: wujiabin@baidu.com
+    @author: icejoywoo
     @date: 28/03/2017
 """
 

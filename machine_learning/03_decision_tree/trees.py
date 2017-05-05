@@ -3,7 +3,7 @@
 
 """
     @brief: 机器学习实战 决策树
-    @author: wujiabin@baidu.com
+    @author: icejoywoo
     @date: 25/03/2017
 """
 

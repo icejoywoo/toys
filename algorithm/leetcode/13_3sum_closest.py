@@ -3,7 +3,7 @@
 
 """
     @brief: https://leetcode.com/problems/3sum-closest/?tab=Description
-    @author: wujiabin@baidu.com
+    @author: icejoywoo
     @date: 07/03/2017
 """
 

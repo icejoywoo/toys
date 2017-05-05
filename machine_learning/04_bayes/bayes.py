@@ -3,7 +3,7 @@
 
 """
     @brief: 朴素贝叶斯
-    @author: wujiabin@baidu.com
+    @author: icejoywoo
     @date: 25/03/2017
 """
 
