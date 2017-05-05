@@ -16,10 +16,14 @@ import os
 import random
 import re
 import sys
+import traceback
 import urlparse
 
-import pymongo
 import requests
+import sqlalchemy.exc
+from sqlalchemy import create_engine, Column, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from retrying import retry
 from pyquery import PyQuery as pq
 
@@ -37,9 +41,41 @@ RAND_URL = 'http://www.laho.gov.cn/g4cdata/search/generateRand.jsp'
 
 OUTPUT = os.path.join(BASE_DIR, 'output.json')
 
-mongo = pymongo.MongoClient('mongodb://localhost:27017/gzfang')
+engine = create_engine('sqlite:///' + os.path.join(BASE_DIR, 'sqlite3.db'))
+Base = declarative_base()
 
-coll = mongo.gzfang.gzfang
+
+class Fang(Base):
+    __tablename__ = 'gzfang'
+
+    fang_id = Column('fang_id', String, primary_key=True)
+    district = Column('district', String, nullable=True)
+    location = Column('location', String, nullable=True)
+    price = Column('price', Float, nullable=True)
+    layout = Column('layout', String, nullable=True)
+    square_meter = Column('square_meter', Float, nullable=True)
+    state = Column('state', String)
+    agency = Column('agency', String)
+    publish_date = Column('publish_date', String)
+    details_url = Column('details_url', String)  # 详情页 url
+
+    def __init__(self, **kwargs):
+        columns = {c.name: c for c in Fang.__table__.columns}
+        unknown_columns = []
+        for k, v in kwargs.items():
+            if k in columns:
+                setattr(self, k, v)
+            else:
+                unknown_columns.append((k, v))
+        if unknown_columns:
+            logger.debug('Unknown column: %s' % ','.join(['%r=%r' % (k, v) for k, v in unknown_columns]))
+
+    def __repr__(self):
+        return '<Fang(id=%r)>' % self.fang_id
+
+Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
 
 
 class FailedToGetRandomException(Exception):
@@ -183,21 +219,39 @@ def load_page(page_number, start_date='', end_date=''):
 
     keys = ('fang_id', 'district', 'location', 'price', 'layout', 'square_meter', 'state', 'agency', 'publish_date')
 
-    counter = 0
-    for element in d('#tab tr').items():
-        # skip first column 'index'
-        values = [i.text() for i in element('td').items()][1:]
-        if values:
-            data = dict(zip(keys, values))
-            data['_id'] = data['fang_id']
-            data['details_url'] = urlparse.urljoin(START_URL, element('td:eq(1) a').attr('href'))
-            ret = coll.save(data)
-            logger.debug('ret: %r, insert data: %r, ' % (ret, data))
-            counter += 1
-        else:
-            logger.debug('cannot parse line: %r' % element.html())
-    logger.info('start date: %(start_date)r, end date: %(end_date)r, '
-                'page: %(current_page)r, data count: %(counter)r' % locals())
+    session = Session()
+    try:
+        counter = 0
+        for element in d('#tab tr').items():
+            # skip first column 'index'
+            values = [i.text() for i in element('td').items()][1:]
+            if values:
+                data = dict(zip(keys, values))
+                data['_id'] = data['fang_id']
+                data['details_url'] = urlparse.urljoin(START_URL, element('td:eq(1) a').attr('href'))
+                try:
+                    f = Fang(**data)
+                    of = session.query(Fang).filter_by(fang_id=data['fang_id']).first()
+                    if of:
+                        nf = session.merge(f)
+                    else:
+                        session.add(f)
+                except sqlalchemy.exc.SQLAlchemyError:
+                    logger.warn('Failed to save data. [exception=%r]' % traceback.format_exc())
+                session.commit()
+                logger.debug('save data: %r' % f)
+                counter += 1
+            else:
+                logger.debug('cannot parse line: %r' % element.html())
+        session.commit()
+        logger.info('start date: %(start_date)r, end date: %(end_date)r, '
+                    'page: %(current_page)r, data count: %(counter)r' % locals())
+    except:
+        session.rollback()
+        logger.warn('rollback. start date: %(start_date)r, end date: %(end_date)r, '
+                    'page: %(current_page)r' % locals())
+    finally:
+        session.close()
     return current_page, total_page
 
 if __name__ == '__main__':
@@ -214,7 +268,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', "--start_date",
                         help="The Start Date - format YYYY-MM-DD ",
-                        required=True,
+                        required=False,
                         type=valid_date)
     parser.add_argument('-e', "--end_date",
                         help="The End Date - format YYYY-MM-DD ",
@@ -226,7 +280,7 @@ if __name__ == '__main__':
     today = datetime.datetime.combine(datetime.datetime.today(), datetime.time())
 
     start_date = args.start_date if args.start_date else today
-    end_date = args.end_date if args.end_date else args.start_date
+    end_date = args.end_date if args.end_date else start_date
     interval = (end_date - start_date).days
 
     def start_process():
