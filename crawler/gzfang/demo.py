@@ -265,6 +265,8 @@ def load_page(page_number, start_date='', end_date=''):
                 logger.debug('cannot parse line: %r' % element.html())
         logger.info('start date: %(start_date)r, end date: %(end_date)r, '
                     'page: %(current_page)r, counter: %(counter)r' % locals())
+    except KeyboardInterrupt:
+        raise
     except:
         session.rollback()
         exc = traceback.format_exc()
