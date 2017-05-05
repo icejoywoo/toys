@@ -2,7 +2,7 @@
 # ^_^ encoding: utf-8 ^_^
 # @date: 2015/7/6
 
-__author__ = 'wujiabin'
+__author__ = 'icejoywoo'
 
 
 class Exp(object):

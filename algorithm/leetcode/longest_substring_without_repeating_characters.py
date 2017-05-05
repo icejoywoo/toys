@@ -2,7 +2,7 @@
 # ^_^ encoding: utf-8 ^_^
 # @date: 2015/9/6
 
-__author__ = 'wujiabin'
+__author__ = 'icejoywoo'
 
 
 class Solution(object):

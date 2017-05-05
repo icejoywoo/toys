@@ -2,7 +2,7 @@
 # ^_^ encoding: utf-8 ^_^
 # @date: 2015/5/4
 
-__author__ = 'wujiabin'
+__author__ = 'icejoywoo'
 
 import random
 import string

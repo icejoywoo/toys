@@ -2,7 +2,7 @@
 # ^_^ encoding: utf-8 ^_^
 # @date: 2015/8/20
 
-__author__ = 'wujiabin'
+__author__ = 'icejoywoo'
 
 # http://python.jobbole.com/81523/
 # http://ruslanspivak.com/lsbaws-part2/

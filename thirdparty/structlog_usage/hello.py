@@ -2,7 +2,7 @@
 # ^_^ encoding: utf-8 ^_^
 # @date: 2015/8/26
 
-__author__ = 'wujiabin'
+__author__ = 'icejoywoo'
 
 import logging
 import logging.handlers
