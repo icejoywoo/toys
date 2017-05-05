@@ -8,6 +8,7 @@
 """
 
 import argparse
+import collections
 import datetime
 import logging
 import multiprocessing
@@ -235,8 +236,7 @@ def load_page(page_number, start_date='', end_date=''):
 
     session = Session()
     try:
-        counter = 0
-        err_counter = 0
+        counter = collections.Counter()
         for element in d('#tab tr').items():
             # skip first column 'index'
             values = [i.text() for i in element('td').items()][1:]
@@ -249,21 +249,22 @@ def load_page(page_number, start_date='', end_date=''):
                     of = session.query(Fang).filter_by(fang_id=data['fang_id']).first()
                     if of:
                         nf = session.merge(f)
+                        counter['update'] += 1
                     else:
                         session.add(f)
+                        counter['insert'] += 1
                     # commit every time to get error at first place
                     session.commit()
                     logger.debug('Save data: %r' % f)
                 except sqlalchemy.exc.SQLAlchemyError:
                     logger.warn('Failed to save data. [exception=%r]' % traceback.format_exc())
-                    err_counter += 1
+                    counter['error'] += 1
                 finally:
-                    counter += 1
+                    counter['total'] += 1
             else:
                 logger.debug('cannot parse line: %r' % element.html())
         logger.info('start date: %(start_date)r, end date: %(end_date)r, '
-                    'page: %(current_page)r, data counter: %(counter)r, '
-                    'data err counter: %(err_counter)r' % locals())
+                    'page: %(current_page)r, counter: %(counter)r' % locals())
     except:
         session.rollback()
         exc = traceback.format_exc()
