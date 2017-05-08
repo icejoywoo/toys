@@ -244,7 +244,7 @@ def load_page(page_number, start_date='', end_date=''):
 
     if current_page != page_number + 1:
         logger.warn('Page not correct. current_page: %(current_page)r page_number: %(page_number)r, '
-                    'start date: %(start_date)r, end date: %(end_date)r' % locals())
+                    'date: [%(start_date)r -> %(end_date)r]' % locals())
 
     keys = ('fang_id', 'district', 'location', 'price', 'layout', 'square_meter', 'state', 'agency', 'publish_date')
 
@@ -279,7 +279,7 @@ def load_page(page_number, start_date='', end_date=''):
                     counter['total'] += 1
             else:
                 logger.debug('cannot parse line: %r' % element.html())
-        logger.info('start date: %(start_date)r, end date: %(end_date)r, '
+        logger.info('date: [%(start_date)r -> %(end_date)r], '
                     'page: %(current_page)r, counter: %(counter)r' % locals())
     except KeyboardInterrupt:
         raise
@@ -331,7 +331,7 @@ if __name__ == '__main__':
             page_start_date = (start_date + datetime.timedelta(days=i)).strftime(date_format)
             page_end_date = (start_date + datetime.timedelta(days=i+1)).strftime(date_format)
             current_page, total_page = load_page(0, page_start_date, page_end_date)
-            logger.info('start date: %(page_start_date)r, end date: %(page_end_date)r, '
+            logger.info('date: [%(page_start_date)r -> %(page_end_date)r], '
                         'page: %(current_page)r, total: %(total_page)r' % locals())
             for j in xrange(1, total_page):
                 pool.apply_async(load_page, (j, page_start_date, page_end_date))
