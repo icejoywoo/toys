@@ -83,7 +83,9 @@ class Fang(Base):
         return r
 
     def diff_str(self):
-        return ','.join(['%s("%s" to "%s")' % (k, '|'.join(v[0]), '|'.join(v[1])) for k, v in self.diff().items()])
+        return ','.join(['%s("%s" to "%s")' %
+                         (k, '|'.join([unicode(i) for i in v[0]]), '|'.join([unicode(i) for i in v[1]]))
+                         for k, v in self.diff().items()])
 
     def __repr__(self):
         return '<Fang(id=%r)>' % self.fang_id
