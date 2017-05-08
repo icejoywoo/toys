@@ -322,6 +322,7 @@ if __name__ == '__main__':
     start_date = args.start_date if args.start_date else today
     end_date = args.end_date if args.end_date else today
     interval = (end_date - start_date).days
+    logger.info('starting. start date: %(start_date)s, end date: %(end_date)s.' % locals())
 
     def start_process():
         logger.debug('starting process: %s' % multiprocessing.current_process().name)
@@ -340,6 +341,7 @@ if __name__ == '__main__':
 
         pool.close()
         pool.join()
+        logger.info('Finished. start date: %(start_date)s, end date: %(end_date)s.' % locals())
     except KeyboardInterrupt:
         pool.terminate()
         logger.warn('Caught user cancel signal and exiting.')
