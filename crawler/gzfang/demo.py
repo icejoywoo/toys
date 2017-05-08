@@ -320,7 +320,7 @@ if __name__ == '__main__':
     today = datetime.datetime.combine(datetime.datetime.today(), datetime.time())
 
     start_date = args.start_date if args.start_date else today
-    end_date = args.end_date if args.end_date else start_date
+    end_date = args.end_date if args.end_date else today
     interval = (end_date - start_date).days
 
     def start_process():
