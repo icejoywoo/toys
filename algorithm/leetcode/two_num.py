@@ -9,7 +9,7 @@ class Solution:
     # @param {integer} target
     # @return {integer[]}
     def twoSum(self, nums, target):
-        nums_dict = {n:i for i, n in enumerate(nums)}
+        nums_dict = {n: i for i, n in enumerate(nums)}
         for i, n in enumerate(nums):
             gap = target - n
             if gap in nums_dict and nums_dict[gap] != i:
