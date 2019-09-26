@@ -46,6 +46,8 @@ class Solution(object):
         p = None
         q = head
         while q:
+            # q.next, p, q = p, q, q.next
+            # 一句简写貌似是和顺序有一定关系的
             t = q.next
             q.next = p
             p, q = q, t
