@@ -34,7 +34,7 @@ class ListNode(object):
 
 
 class Solution(object):
-    def reverseList(self, head):
+    def reverseList1(self, head):
         """
         :type head: ListNode
         :rtype: ListNode
@@ -54,7 +54,19 @@ class Solution(object):
 
         return p
 
+    def reverseList(self, head):
+        """
+        :type head: ListNode
+        :rtype: ListNode
+        """
+        prev, cur = None, head
+        while cur:
+            cur.next, prev, cur = prev, cur, cur.next
+        return prev
+
 
 if __name__ == '__main__':
     s = Solution()
-    print s.reverseList(list_node([1,2,3,4,5]))
+    print s.reverseList(list_node([]))
+    print s.reverseList(list_node([1]))
+    print s.reverseList(list_node([1, 2, 3, 4, 5]))
