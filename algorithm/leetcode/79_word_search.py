@@ -29,10 +29,11 @@ class Solution(object):
 
         # print i, j, board[i][j], word
         if board[i][j] == word[0]:
-            path.add((i, j))
             for x in range(4):
-                if self.search(board, height, width, word[1:], i + self.dx[x], j + self.dy[x], set(path)):
+                path.add((i, j))
+                if self.search(board, height, width, word[1:], i + self.dx[x], j + self.dy[x], path):
                     return True
+                path.remove((i, j))
 
         return False
 
