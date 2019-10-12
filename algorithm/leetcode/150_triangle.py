@@ -49,6 +49,22 @@ class Solution(object):
 
         return dp[0][0]
 
+    def minimumTotalDPCompress(self, triangle):
+        """
+        :type triangle: List[List[int]]
+        :rtype: int
+        """
+        l = len(triangle)
+
+        # dp space only use one array
+        dp = [0] * (l+1)
+
+        for i in range(l-1, -1, -1):
+            for j, e in enumerate(triangle[i]):
+                dp[j] = e + min(dp[j], dp[j+1])
+
+        return dp[0]
+
     def minimumTotalDP2(self, triangle):
         """
         :type triangle: List[List[int]]
@@ -64,7 +80,7 @@ class Solution(object):
 
         return dp[0, 0]
 
-    minimumTotal = minimumTotalDP2
+    minimumTotal = minimumTotalDPCompress
 
 
 if __name__ == '__main__':
