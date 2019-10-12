@@ -37,11 +37,12 @@ class Solution(object):
         l = len(nums)
         # negative abs max, positive max
         dp = [(0, 0)] * l
-        dp[0], res = (nums[0], nums[0]), nums[0]
+        dp[0] = (nums[0], nums[0])
 
         for i in range(1, l):
             e = nums[i]
             if e >= 0:
+                # 设置为 e，表示新的起点
                 dp[i] = (min(dp[i-1][0] * e, e), max(dp[i-1][1] * e, e))
             else:
                 dp[i] = (min(dp[i-1][1] * e, e), max(dp[i-1][0] * e, e))
