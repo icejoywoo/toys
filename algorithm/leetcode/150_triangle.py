@@ -7,6 +7,8 @@
     @date: 2019-10-12
 """
 
+import collections
+
 
 class Solution(object):
 
@@ -47,7 +49,22 @@ class Solution(object):
 
         return dp[0][0]
 
-    minimumTotal = minimumTotalDP
+    def minimumTotalDP2(self, triangle):
+        """
+        :type triangle: List[List[int]]
+        :rtype: int
+        """
+        l = len(triangle)
+
+        dp = collections.defaultdict(int)
+
+        for i in range(l-1, -1, -1):
+            for j, e in enumerate(triangle[i]):
+                dp[i, j] = e + min(dp[i+1, j], dp[i+1, j+1])
+
+        return dp[0, 0]
+
+    minimumTotal = minimumTotalDP2
 
 
 if __name__ == '__main__':
