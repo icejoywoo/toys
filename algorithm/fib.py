@@ -17,6 +17,26 @@ def fib_recursive(n):
         return fib_recursive(n-1) + fib_recursive(n-2)
 
 
+def fib_recursive_with_cache(n, cache={}):
+    """ 带有缓存的递归实现的fib数列
+    """
+    # recursive terminator
+    if n in (0, 1):
+        return 1
+
+    # process
+    if n - 1 not in cache:
+        cache[n - 1] = fib_recursive_with_cache(n - 1)
+
+    a = cache[n - 1]
+
+    if n - 2 not in cache:
+        cache[n - 2] = fib_recursive_with_cache(n - 2)
+
+    b = cache[n - 2]
+    return a + b
+
+
 def fib_tail_recursive(n):
     """ 尾递归实现的fib数列
     """
@@ -43,6 +63,20 @@ def fib_iterate(n):
         f[i] = f[i-1] + f[i-2]
 
     return f[n]
+
+
+def fib_iterate2(n):
+    """ 迭代实现的fib
+    """
+    if n <= 1:
+        return 1
+
+    a, b = 1, 1
+
+    for i in xrange(2, n+1):
+        a, b = b, a+b
+
+    return b
 
 
 def power_bruce_force(a, n):
@@ -101,7 +135,7 @@ def power_iterate(a, n):
 
 
 if __name__ == '__main__':
-    for f in (fib_recursive, fib_tail_recursive, fib_iterate):
+    for f in (fib_recursive, fib_recursive_with_cache, fib_tail_recursive, fib_iterate, fib_iterate2):
         assert f(0) == 1
         assert f(1) == 1
         assert f(10) == 89
