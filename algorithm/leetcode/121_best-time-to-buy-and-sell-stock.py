@@ -34,9 +34,27 @@ class Solution(object):
 
         return ret
 
+    def maxProfitBF(self, prices):
+
+        def f(prices, buy, count):
+            if not prices:
+                return 0
+
+            if count > 0 and buy:
+                return max(f(prices[1:], buy, count), f(prices[1:], None, count-1) + prices[0])
+            elif count > 0 and not buy:
+                return max(f(prices[1:], None, count), f(prices[1:], prices[0], count) - prices[0])
+            else:
+                return f(prices[1:], buy, count)
+
+        return f(prices, None, 1)
+
+    maxProfit = maxProfitBF
+
 
 if __name__ == '__main__':
     s = Solution()
     assert s.maxProfit([]) == 0
+    print s.maxProfit([7, 1, 5, 3, 6, 4])
     assert s.maxProfit([7, 1, 5, 3, 6, 4]) == 5
     assert s.maxProfit([7, 6, 4, 3, 1]) == 0
