@@ -6,6 +6,7 @@
     @author: icejoywoo
     @date: 2019-09-24
 """
+import bisect
 
 # 暴力递归法，遍历所有的组合情况，然后算最大的，时间复杂度为2^n
 class SolutionBF(object):
@@ -40,7 +41,7 @@ class SolutionBF(object):
 
 
 class Solution(object):
-    def lengthOfLIS(self, nums):
+    def lengthOfLISDP(self, nums):
         """
         :type nums: List[int]
         :rtype: int
@@ -59,9 +60,24 @@ class Solution(object):
 
         return max(dp)
 
+    def lengthOfLISBinarySearch(self, nums):
+        lis = []
+
+        for i, e in enumerate(nums):
+            pos = bisect.bisect_left(lis, e)
+            if len(lis) == pos:
+                lis.append(e)
+            else:
+                lis[pos] = e
+
+        return len(lis)
+
+    lengthOfLIS = lengthOfLISBinarySearch
+
 
 if __name__ == '__main__':
     s = Solution()
-    assert s.lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18]) == 4
+    assert s.lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18, 20]) == 5
     assert s.lengthOfLIS([]) == 0
     assert s.lengthOfLIS([0]) == 1
+    assert s.lengthOfLIS([2, 2]) == 1
